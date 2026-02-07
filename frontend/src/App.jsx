@@ -54,7 +54,7 @@ function App() {
 
   useEffect(() => {
     const fetchData = () => {
-      fetch("https://water-quality-monitoring-system-sqag.onrender.com")
+      fetch(`${import.meta.env.VITE_API_URL}/api/sensor-data`)
         .then((res) => res.json())
         .then(setData)
         .catch(console.error);
