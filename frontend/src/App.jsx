@@ -54,7 +54,7 @@ function App() {
 
   useEffect(() => {
     const fetchData = () => {
-      fetch("http://localhost:5000/api/sensor-data")
+      fetch("https://water-quality-monitoring-system-sqag.onrender.com")
         .then((res) => res.json())
         .then(setData)
         .catch(console.error);
