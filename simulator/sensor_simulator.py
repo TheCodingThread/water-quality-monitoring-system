@@ -3,7 +3,7 @@ import random
 import time
 from datetime import datetime
 
-API_URL = "http://localhost:5000/api/sensor-data"
+API_URL = "https://water-quality-monitoring-system-sqag.onrender.com/api/sensor-data"
 
 locations = ["Jaipur", "Delhi", "Ajmer", "Udaipur"]
 
