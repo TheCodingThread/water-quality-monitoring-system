@@ -62,7 +62,7 @@ async function startServer() {
         } catch (error) {
           console.log("Auto simulation error:", error.message);
         }
-      }, 60000);
+      }, 6000);
     });
 
   } catch (error) {
