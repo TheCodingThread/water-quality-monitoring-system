@@ -45,31 +45,29 @@ async function startServer() {
     await mongoose.connect(MONGO_URI);
     console.log("MongoDB connected");
 
-    app.get("/", (req, res) => {
-      res.send("Water Quality Monitoring Backend is running");
-    });
-
     const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+
+      // Start auto simulator AFTER server starts
+      setInterval(async () => {
+        try {
+          const data = generateRandomData();
+          await axios.post(
+            `http://localhost:${PORT}/api/sensor-data`,
+            data
+          );
+          console.log("Auto data sent");
+        } catch (error) {
+          console.log("Auto simulation error:", error.message);
+        }
+      }, 60000);
+    });
 
   } catch (error) {
     console.error("MongoDB connection failed:", error.message);
   }
-
-  app.get("/api/sensor-data", async (req, res) => {
-    try {
-      const data = await SensorData.find()
-        .sort({ timestamp: -1 })
-        .limit(20);
-
-      res.json(data);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch data" });
-    }
-  });
 }
 
 app.post("/api/sensor-data", async (req, res) => {
@@ -150,9 +148,9 @@ setInterval(async () => {
   try {
     const data = generateRandomData();
     await axios.post(
-      "https://water-quality-monitoring-system-sqag.onrender.com/api/sensor-data",
-      data
-    );
+    `http://localhost:${process.env.PORT || 5000}/api/sensor-data`,
+    data
+);
     console.log("Auto data sent");
   } catch (error) {
     console.log("Auto simulation error");
