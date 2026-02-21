@@ -112,45 +112,45 @@ app.post("/api/sensor-data", async (req, res) => {
   }
 });
 
-function generateRandomData() {
-  const locations = ["Jaipur", "Delhi", "Ajmer", "Udaipur"];
-  const location = locations[Math.floor(Math.random() * locations.length)];
+// function generateRandomData() {
+//   const locations = ["Jaipur", "Delhi", "Ajmer", "Udaipur"];
+//   const location = locations[Math.floor(Math.random() * locations.length)];
 
-  // Decide SAFE (70%) or UNSAFE (30%)
-  const isSafe = Math.random() < 0.7;
+//   // Decide SAFE (70%) or UNSAFE (30%)
+//   const isSafe = Math.random() < 0.7;
 
-  let pH, tds, turbidity;
+//   let pH, tds, turbidity;
 
-  if (isSafe) {
-    // SAFE ranges
-    pH = +(Math.random() * (8.5 - 6.5) + 6.5).toFixed(2);
-    tds = Math.floor(Math.random() * (500 - 200) + 200);
-    turbidity = +(Math.random() * (5 - 1) + 1).toFixed(2);
-  } else {
-    // UNSAFE ranges
-    pH = +(Math.random() < 0.5
-      ? Math.random() * (6.4 - 4) + 4
-      : Math.random() * (10 - 8.6) + 8.6
-    ).toFixed(2);
+//   if (isSafe) {
+//     // SAFE ranges
+//     pH = +(Math.random() * (8.5 - 6.5) + 6.5).toFixed(2);
+//     tds = Math.floor(Math.random() * (500 - 200) + 200);
+//     turbidity = +(Math.random() * (5 - 1) + 1).toFixed(2);
+//   } else {
+//     // UNSAFE ranges
+//     pH = +(Math.random() < 0.5
+//       ? Math.random() * (6.4 - 4) + 4
+//       : Math.random() * (10 - 8.6) + 8.6
+//     ).toFixed(2);
 
-    tds = Math.floor(Math.random() * (1200 - 800) + 800);
-    turbidity = +(Math.random() * (20 - 10) + 10).toFixed(2);
-  }
+//     tds = Math.floor(Math.random() * (1200 - 800) + 800);
+//     turbidity = +(Math.random() * (20 - 10) + 10).toFixed(2);
+//   }
 
-  return {
-    location,
-    pH,
-    tds,
-    turbidity,
-    temperature: Math.floor(Math.random() * 20) + 20,
-  };
-}
+//   return {
+//     location,
+//     pH,
+//     tds,
+//     turbidity,
+//     temperature: Math.floor(Math.random() * 20) + 20,
+//   };
+// }
 
 setInterval(async () => {
   try {
     const data = generateRandomData();
     await axios.post(
-      "https://your-backend-link.onrender.com/api/sensor-data",
+      "https://water-quality-monitoring-system-sqag.onrender.com/api/sensor-data",
       data
     );
     console.log("Auto data sent");
