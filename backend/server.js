@@ -78,7 +78,8 @@ app.get("/", (req, res) => {
 // ---------------- MAIN API ----------------
 app.get("/api/sensor-data", async (req, res) => {
   try {
-    // Generate ONE new record every fetch
+
+    // -------- GENERATE RANDOM DATA --------
     const randomData = generateRandomData();
 
     const evaluation = evaluateWaterQuality(randomData);
@@ -93,7 +94,7 @@ app.get("/api/sensor-data", async (req, res) => {
 
     console.log("Generated new sensor data");
 
-    // Return latest 20 records
+    // -------- FETCH LATEST 20 RECORDS --------
     const data = await SensorData.find()
       .sort({ timestamp: -1 })
       .limit(20);
@@ -101,6 +102,7 @@ app.get("/api/sensor-data", async (req, res) => {
     res.json(data);
 
   } catch (error) {
+
     console.error(error.message);
 
     res.status(500).json({
