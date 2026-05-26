@@ -11,7 +11,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 5000;
 
 const MONGO_URI =
-  "mongodb+srv://admin:<TSOwqc5577>@water-quality-cluster.xfw4xk0.mongodb.net/?appName=water-quality-cluster";
+  "mongodb+srv://admin:water12345@water-quality-cluster.xfw4xk0.mongodb.net/?appName=water-quality-cluster";
 
 // ---------------- WATER QUALITY EVALUATION ----------------
 function evaluateWaterQuality(data) {
