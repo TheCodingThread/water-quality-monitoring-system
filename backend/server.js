@@ -2,18 +2,18 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const SensorData = require("./models/SensorData");
-const sendAlertEmail = require("./utils/sendAlertEmail");
 
 const app = express();
-const PORT = 5000;
-const axios = require("axios");
 
 app.use(cors());
 app.use(express.json());
 
-const MONGO_URI =
-  "mongodb+srv://admin:TSOwqc5577@water-quality-cluster.xfw4xk0.mongodb.net/waterDB?retryWrites=true&w=majority";
+const PORT = process.env.PORT || 5000;
 
+const MONGO_URI =
+  "mongodb+srv://admin:<TSOwqc5577>@water-quality-cluster.xfw4xk0.mongodb.net/?appName=water-quality-cluster";
+
+// ---------------- WATER QUALITY EVALUATION ----------------
 function evaluateWaterQuality(data) {
   let issues = [];
 
@@ -29,110 +29,36 @@ function evaluateWaterQuality(data) {
     issues.push("High TDS");
   }
 
-  if (data.temperature > 30) {
-    issues.push("High temperature");
-  }
-
   return {
     status: issues.length === 0 ? "SAFE" : "UNSAFE",
     issues,
   };
 }
 
-
-async function startServer() {
-  try {
-    await mongoose.connect(MONGO_URI);
-    console.log("MongoDB connected");
-
-    const PORT = process.env.PORT || 5000;
-
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-
-      // Start auto simulator AFTER server starts
-      setInterval(async () => {
-        try {
-          const data = generateRandomData();
-          await axios.post(
-            `http://localhost:${PORT}/api/sensor-data`,
-            data
-          );
-          console.log("Auto data sent");
-        } catch (error) {
-          console.log("Auto simulation error:", error.message);
-        }
-      }, 6000);
-    });
-
-  } catch (error) {
-    console.error("MongoDB connection failed:", error.message);
-  }
-}
-
-app.post("/api/sensor-data", async (req, res) => {
-  try {
-    const evaluation = evaluateWaterQuality(req.body);
-
-    console.log("Evaluation Status:", evaluation.status);
-    console.log("Issues:", evaluation.issues);
-
-
-    const data = new SensorData({
-      ...req.body,
-      status: evaluation.status,
-      issues: evaluation.issues,
-    });
-
-    await data.save();
-
-    if (evaluation.status === "UNSAFE") {
-      try {
-        console.log("Triggering email alert...");
-        await sendAlertEmail(data);
-        console.log("Alert email sent");
-      } catch (emailError) {
-        console.error("Email failed, but data saved:", emailError.message);
-      }
-    }
-
-    res.status(201).json({
-      message: "Sensor data saved and evaluated",
-      status: evaluation.status,
-      issues: evaluation.issues,
-      data,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to process sensor data",
-      error: error.message,
-    });
-  }
-});
-
+// ---------------- RANDOM DATA GENERATOR ----------------
 function generateRandomData() {
   const locations = ["Jaipur", "Delhi", "Ajmer", "Udaipur"];
-  const location = locations[Math.floor(Math.random() * locations.length)];
 
-  // Decide SAFE (70%) or UNSAFE (30%)
-  const isSafe = Math.random() < 0.7;
+  const location =
+    locations[Math.floor(Math.random() * locations.length)];
+
+  // 80% SAFE
+  const isSafe = Math.random() < 0.8;
 
   let pH, tds, turbidity;
 
   if (isSafe) {
-    // SAFE ranges
     pH = +(Math.random() * (8.5 - 6.5) + 6.5).toFixed(2);
     tds = Math.floor(Math.random() * (500 - 200) + 200);
     turbidity = +(Math.random() * (5 - 1) + 1).toFixed(2);
   } else {
-    // UNSAFE ranges
     pH = +(Math.random() < 0.5
       ? Math.random() * (6.4 - 4) + 4
       : Math.random() * (10 - 8.6) + 8.6
     ).toFixed(2);
 
-    tds = Math.floor(Math.random() * (1200 - 800) + 800);
-    turbidity = +(Math.random() * (20 - 10) + 10).toFixed(2);
+    tds = Math.floor(Math.random() * (1200 - 700) + 700);
+    turbidity = +(Math.random() * (15 - 8) + 8).toFixed(2);
   }
 
   return {
@@ -140,21 +66,58 @@ function generateRandomData() {
     pH,
     tds,
     turbidity,
-    temperature: Math.floor(Math.random() * 20) + 20,
+    temperature: Math.floor(Math.random() * 15) + 20,
   };
 }
 
-setInterval(async () => {
-  try {
-    const data = generateRandomData();
-    await axios.post(
-    `http://localhost:${process.env.PORT || 5000}/api/sensor-data`,
-    data
-);
-    console.log("Auto data sent");
-  } catch (error) {
-    console.log("Auto simulation error");
-  }
-}, 60000); // every 60 seconds
+// ---------------- ROOT ROUTE ----------------
+app.get("/", (req, res) => {
+  res.send("Backend Running");
+});
 
-startServer();
+// ---------------- MAIN API ----------------
+app.get("/api/sensor-data", async (req, res) => {
+  try {
+    // Generate ONE new record every fetch
+    const randomData = generateRandomData();
+
+    const evaluation = evaluateWaterQuality(randomData);
+
+    const newEntry = new SensorData({
+      ...randomData,
+      status: evaluation.status,
+      issues: evaluation.issues,
+    });
+
+    await newEntry.save();
+
+    console.log("Generated new sensor data");
+
+    // Return latest 20 records
+    const data = await SensorData.find()
+      .sort({ timestamp: -1 })
+      .limit(20);
+
+    res.json(data);
+
+  } catch (error) {
+    console.error(error.message);
+
+    res.status(500).json({
+      error: "Server Error",
+    });
+  }
+});
+
+// ---------------- START SERVER ----------------
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log("MongoDB Connected");
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.log(err);
+  });
