@@ -54,6 +54,7 @@ function App() {
 
   useEffect(() => {
     const fetchData = () => {
+      console.log("FETCHING DATA...");
       fetch(`${import.meta.env.VITE_API_URL}/api/sensor-data`)
         .then((res) => res.json())
         .then(setData)
