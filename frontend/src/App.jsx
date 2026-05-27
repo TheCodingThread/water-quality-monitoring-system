@@ -65,6 +65,10 @@ const redIcon = new L.Icon({
 function App() {
 
   const [data, setData] = useState([]);
+
+  const [darkMode, setDarkMode] = useState(
+    localStorage.getItem("theme") === "dark"
+  );
   const [loading, setLoading] = useState(true);
 
   const [selectedCity, setSelectedCity] = useState("All");
@@ -93,6 +97,16 @@ function App() {
         console.error(error);
       }
     };
+
+    useEffect(() => {
+  if (darkMode) {
+    document.body.classList.add("dark");
+    localStorage.setItem("theme", "dark");
+  } else {
+    document.body.classList.remove("dark");
+    localStorage.setItem("theme", "light");
+  }
+}, [darkMode]);
 
     // Initial fetch
     fetchData();
@@ -157,6 +171,13 @@ function App() {
   // ---------------- UI ----------------
   return (
     <div className="dashboard-container">
+
+    <button
+  onClick={() => setDarkMode(!darkMode)}
+  className="theme-toggle"
+>
+  {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+</button>
 
       <h1>
         🚰 LIVE Water Quality Monitoring Dashboard
