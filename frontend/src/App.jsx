@@ -11,17 +11,6 @@ import {
 
 import { Line } from "react-chartjs-2";
 
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-} from "react-leaflet";
-
-import L from "leaflet";
-
-import "leaflet/dist/leaflet.css";
-
 ChartJS.register(
   LineElement,
   CategoryScale,
@@ -31,201 +20,115 @@ ChartJS.register(
   Tooltip
 );
 
-// ---------------- CITY COORDINATES ----------------
-const cityCoordinates = {
-  Jaipur: [26.9124, 75.7873],
-  Delhi: [28.6139, 77.209],
-  Ajmer: [26.4499, 74.6399],
-  Udaipur: [24.5854, 73.7125],
-};
-
-// ---------------- MAP ICONS ----------------
-const greenIcon = new L.Icon({
-  iconUrl:
-    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
-
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
-const redIcon = new L.Icon({
-  iconUrl:
-    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
-
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
 function App() {
-
   const [data, setData] = useState([]);
+  const [darkMode, setDarkMode] = useState(false);
 
-  const [darkMode, setDarkMode] = useState(
-    localStorage.getItem("theme") === "dark"
-  );
-  const [loading, setLoading] = useState(true);
-
-  const [selectedCity, setSelectedCity] = useState("All");
-  const [selectedStatus, setSelectedStatus] = useState("All");
-
-  // ---------------- FETCH DATA ----------------
+  // Fetch data
   useEffect(() => {
-
     const fetchData = async () => {
       try {
-
-        console.log("FETCHING LIVE DATA...");
-
         const response = await fetch(
           "https://water-quality-monitoring-system-sqag.onrender.com/api/sensor-data"
         );
 
         const result = await response.json();
 
-        // Force fresh rerender
-        setData([...result]);
-
-        setLoading(false);
-
+        setData(result);
       } catch (error) {
         console.error(error);
       }
     };
 
-    useEffect(() => {
-  if (darkMode) {
-    document.body.classList.add("dark");
-    localStorage.setItem("theme", "dark");
-  } else {
-    document.body.classList.remove("dark");
-    localStorage.setItem("theme", "light");
-  }
-}, [darkMode]);
-
-    // Initial fetch
     fetchData();
 
-    // Fetch every 5 seconds
     const interval = setInterval(fetchData, 5000);
 
     return () => clearInterval(interval);
-
   }, []);
 
-  // ---------------- FILTER DATA ----------------
-  const filteredData = data.filter((item) => {
+  // Theme effect
+  useEffect(() => {
+    if (darkMode) {
+      document.body.style.backgroundColor = "#121212";
+      document.body.style.color = "white";
+    } else {
+      document.body.style.backgroundColor = "#f5f7fb";
+      document.body.style.color = "black";
+    }
+  }, [darkMode]);
 
-    const cityMatch =
-      selectedCity === "All" ||
-      item.location === selectedCity;
-
-    const statusMatch =
-      selectedStatus === "All" ||
-      item.status === selectedStatus;
-
-    return cityMatch && statusMatch;
-  });
-
-  // ---------------- CHART DATA ----------------
   const chartData = {
-    labels: filteredData.map((d) =>
+    labels: data.map((d) =>
       new Date(d.timestamp).toLocaleTimeString()
     ),
 
     datasets: [
       {
         label: "pH",
-        data: filteredData.map((d) => d.pH),
+        data: data.map((d) => d.pH),
         borderColor: "blue",
       },
 
       {
         label: "TDS",
-        data: filteredData.map((d) => d.tds),
+        data: data.map((d) => d.tds),
         borderColor: "green",
       },
 
       {
         label: "Turbidity",
-        data: filteredData.map((d) => d.turbidity),
+        data: data.map((d) => d.turbidity),
         borderColor: "red",
       },
     ],
   };
 
-  // ---------------- LOADING ----------------
-  if (loading) {
-    return (
-      <div style={{ padding: "40px" }}>
-        <h2>Loading Dashboard...</h2>
-      </div>
-    );
-  }
-
-  // ---------------- UI ----------------
   return (
-    <div className="dashboard-container">
+    <div
+      style={{
+        padding: "20px",
+        minHeight: "100vh",
+        backgroundColor: darkMode ? "#121212" : "#f5f7fb",
+        color: darkMode ? "white" : "black",
+      }}
+    >
+      <button
+        onClick={() => setDarkMode(!darkMode)}
+        style={{
+          padding: "10px 18px",
+          border: "none",
+          borderRadius: "10px",
+          cursor: "pointer",
+          marginBottom: "20px",
+          backgroundColor: darkMode ? "#333" : "#1976d2",
+          color: "white",
+          fontWeight: "bold",
+        }}
+      >
+        {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+      </button>
 
-    <button
-  onClick={() => setDarkMode(!darkMode)}
-  className="theme-toggle"
->
-  {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
-</button>
+      <h1>🚰 LIVE Water Quality Monitoring Dashboard</h1>
 
-      <h1>
-        🚰 LIVE Water Quality Monitoring Dashboard
-      </h1>
+      <div
+        style={{
+          background: darkMode ? "#1e1e1e" : "white",
+          padding: "20px",
+          borderRadius: "12px",
+          marginTop: "20px",
+        }}
+      >
+        <h2>Live Sensor Data</h2>
 
-      {/* FILTERS */}
-      <div className="card">
-
-        <h3>Filters</h3>
-
-        <label>City: </label>
-
-        <select
-          value={selectedCity}
-          onChange={(e) =>
-            setSelectedCity(e.target.value)
-          }
+        <table
+          border="1"
+          cellPadding="10"
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+          }}
         >
-          <option>All</option>
-          <option>Jaipur</option>
-          <option>Delhi</option>
-          <option>Ajmer</option>
-          <option>Udaipur</option>
-        </select>
-
-        <label style={{ marginLeft: "20px" }}>
-          Status:
-        </label>
-
-        <select
-          value={selectedStatus}
-          onChange={(e) =>
-            setSelectedStatus(e.target.value)
-          }
-        >
-          <option>All</option>
-          <option>SAFE</option>
-          <option>UNSAFE</option>
-        </select>
-
-      </div>
-
-      {/* TABLE */}
-      <div className="card">
-
-        <h3>Live Sensor Data</h3>
-
-        <table>
           <thead>
             <tr>
               <th>Location</th>
@@ -237,109 +140,42 @@ function App() {
           </thead>
 
           <tbody>
-
-            {filteredData.map((d) => (
-
+            {data.map((d) => (
               <tr key={d._id}>
-
                 <td>{d.location}</td>
                 <td>{d.pH}</td>
                 <td>{d.tds}</td>
                 <td>{d.turbidity}</td>
 
-                <td>
-                  <span
-                    style={{
-                      padding: "5px 10px",
-                      borderRadius: "12px",
-
-                      background:
-                        d.status === "SAFE"
-                          ? "#e6f4ea"
-                          : "#fdecea",
-
-                      color:
-                        d.status === "SAFE"
-                          ? "#2e7d32"
-                          : "#c62828",
-
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {d.status}
-                  </span>
+                <td
+                  style={{
+                    color:
+                      d.status === "SAFE"
+                        ? "limegreen"
+                        : "red",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {d.status}
                 </td>
-
               </tr>
-
             ))}
-
           </tbody>
         </table>
-
       </div>
 
-      {/* CHART */}
-      <div className="card">
+      <div
+        style={{
+          background: darkMode ? "#1e1e1e" : "white",
+          padding: "20px",
+          borderRadius: "12px",
+          marginTop: "30px",
+        }}
+      >
+        <h2>Water Quality Trends</h2>
 
-        <h3>Live Water Quality Trends</h3>
-
-        <Line
-          key={filteredData.length}
-          data={chartData}
-        />
-
+        <Line data={chartData} />
       </div>
-
-      {/* MAP */}
-      <div className="card">
-
-        <h3>Geographic Monitoring</h3>
-
-        <MapContainer
-          center={[26.9124, 75.7873]}
-          zoom={6}
-          style={{
-            height: "400px",
-            width: "100%",
-          }}
-        >
-
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-
-          {filteredData.map((d) => (
-
-            cityCoordinates[d.location] ? (
-
-              <Marker
-                key={d._id}
-                position={
-                  cityCoordinates[d.location]
-                }
-
-                icon={
-                  d.status === "SAFE"
-                    ? greenIcon
-                    : redIcon
-                }
-              >
-
-                <Popup>
-                  {d.location} — {d.status}
-                </Popup>
-
-              </Marker>
-
-            ) : null
-
-          ))}
-
-        </MapContainer>
-
-      </div>
-
     </div>
   );
 }
