@@ -9,6 +9,17 @@ import {
   Tooltip,
 } from "chart.js";
 
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+} from "react-leaflet";
+
+import L from "leaflet";
+
+import "leaflet/dist/leaflet.css";
+
 import { Line } from "react-chartjs-2";
 
 ChartJS.register(
@@ -19,6 +30,35 @@ ChartJS.register(
   Legend,
   Tooltip
 );
+
+const cityCoordinates = {
+  Jaipur: [26.9124, 75.7873],
+  Delhi: [28.6139, 77.2090],
+  Ajmer: [26.4499, 74.6399],
+  Udaipur: [24.5854, 73.7125],
+};
+
+const greenIcon = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+
+  shadowUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+const redIcon = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+
+  shadowUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
 
 function App() {
   const [data, setData] = useState([]);
@@ -129,38 +169,55 @@ function App() {
             borderCollapse: "collapse",
           }}
         >
-          <thead>
-            <tr>
-              <th>Location</th>
-              <th>pH</th>
-              <th>TDS</th>
-              <th>Turbidity</th>
-              <th>Status</th>
-            </tr>
-          </thead>
+          <thead
+  style={{
+    backgroundColor: "#1976d2",
+    color: "white",
+  }}
+>
+  <tr>
+    <th>Location</th>
+    <th>pH</th>
+    <th>TDS</th>
+    <th>Turbidity</th>
+    <th>Status</th>
+  </tr>
+</thead>
 
           <tbody>
-            {data.map((d) => (
-              <tr key={d._id}>
-                <td>{d.location}</td>
-                <td>{d.pH}</td>
-                <td>{d.tds}</td>
-                <td>{d.turbidity}</td>
+  {data.map((d) => (
+    <tr
+      key={d._id}
+      style={{
+        backgroundColor: darkMode
+          ? "#1e1e1e"
+          : "white",
 
-                <td
-                  style={{
-                    color:
-                      d.status === "SAFE"
-                        ? "limegreen"
-                        : "red",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {d.status}
-                </td>
-              </tr>
-            ))}
-          </tbody>
+        color: darkMode
+          ? "white"
+          : "black",
+      }}
+    >
+      <td>{d.location}</td>
+      <td>{d.pH}</td>
+      <td>{d.tds}</td>
+      <td>{d.turbidity}</td>
+
+      <td
+        style={{
+          color:
+            d.status === "SAFE"
+              ? "limegreen"
+              : "red",
+
+          fontWeight: "bold",
+        }}
+      >
+        {d.status}
+      </td>
+    </tr>
+  ))}
+</tbody>
         </table>
       </div>
 
@@ -176,6 +233,49 @@ function App() {
 
         <Line data={chartData} />
       </div>
+
+      <div
+  style={{
+    background: darkMode ? "#1e1e1e" : "white",
+    padding: "20px",
+    borderRadius: "12px",
+    marginTop: "30px",
+  }}
+>
+  <h2>Geographic Monitoring</h2>
+
+  <MapContainer
+    center={[26.9124, 75.7873]}
+    zoom={6}
+    style={{
+      height: "400px",
+      width: "100%",
+      borderRadius: "12px",
+    }}
+  >
+    <TileLayer
+      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    />
+
+    {data.map((d) =>
+      cityCoordinates[d.location] ? (
+        <Marker
+          key={d._id}
+          position={cityCoordinates[d.location]}
+          icon={
+            d.status === "SAFE"
+              ? greenIcon
+              : redIcon
+          }
+        >
+          <Popup>
+            {d.location} - {d.status}
+          </Popup>
+        </Marker>
+      ) : null
+    )}
+  </MapContainer>
+</div>
     </div>
   );
 }
