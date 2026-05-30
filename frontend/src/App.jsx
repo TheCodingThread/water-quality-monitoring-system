@@ -125,40 +125,17 @@ function App() {
   };
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        minHeight: "100vh",
-        backgroundColor: darkMode ? "#121212" : "#f5f7fb",
-        color: darkMode ? "white" : "black",
-      }}
-    >
+    <div className="dashboard-container">
       <button
-        onClick={() => setDarkMode(!darkMode)}
-        style={{
-          padding: "10px 18px",
-          border: "none",
-          borderRadius: "10px",
-          cursor: "pointer",
-          marginBottom: "20px",
-          backgroundColor: darkMode ? "#333" : "#1976d2",
-          color: "white",
-          fontWeight: "bold",
-        }}
-      >
+  onClick={() => setDarkMode(!darkMode)}
+  className="theme-toggle"
+>
         {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
       </button>
 
       <h1>🚰 LIVE Water Quality Monitoring Dashboard</h1>
 
-      <div
-        style={{
-          background: darkMode ? "#1e1e1e" : "white",
-          padding: "20px",
-          borderRadius: "12px",
-          marginTop: "20px",
-        }}
-      >
+      <div className="card">
         <h2>Live Sensor Data</h2>
 
         <table
@@ -221,27 +198,13 @@ function App() {
         </table>
       </div>
 
-      <div
-        style={{
-          background: darkMode ? "#1e1e1e" : "white",
-          padding: "20px",
-          borderRadius: "12px",
-          marginTop: "30px",
-        }}
-      >
+      <div className="card">
         <h2>Water Quality Trends</h2>
 
         <Line data={chartData} />
       </div>
 
-      <div
-  style={{
-    background: darkMode ? "#1e1e1e" : "white",
-    padding: "20px",
-    borderRadius: "12px",
-    marginTop: "30px",
-  }}
->
+      <div className="card">
   <h2>Geographic Monitoring</h2>
 
   <MapContainer
