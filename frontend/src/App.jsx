@@ -89,14 +89,12 @@ function App() {
 
   // Theme effect
   useEffect(() => {
-    if (darkMode) {
-      document.body.style.backgroundColor = "#121212";
-      document.body.style.color = "white";
-    } else {
-      document.body.style.backgroundColor = "#f5f7fb";
-      document.body.style.color = "black";
-    }
-  }, [darkMode]);
+  if (darkMode) {
+    document.body.classList.add("dark");
+  } else {
+    document.body.classList.remove("dark");
+  }
+}, [darkMode]);
 
   const chartData = {
     labels: data.map((d) =>
