@@ -13,7 +13,6 @@ const PORT = process.env.PORT || 5000;
 const MONGO_URI =
   "mongodb+srv://admin:water12345@water-quality-cluster.xfw4xk0.mongodb.net/?appName=water-quality-cluster";
 
-// ---------------- WATER QUALITY EVALUATION ----------------
 function evaluateWaterQuality(data) {
   let issues = [];
 
@@ -35,14 +34,12 @@ function evaluateWaterQuality(data) {
   };
 }
 
-// ---------------- RANDOM DATA GENERATOR ----------------
 function generateRandomData() {
   const locations = ["Jaipur", "Delhi", "Ajmer", "Udaipur"];
 
   const location =
     locations[Math.floor(Math.random() * locations.length)];
 
-  // 80% SAFE
   const isSafe = Math.random() < 0.8;
 
   let pH, tds, turbidity;
@@ -70,16 +67,13 @@ function generateRandomData() {
   };
 }
 
-// ---------------- ROOT ROUTE ----------------
 app.get("/", (req, res) => {
   res.send("Backend Running");
 });
 
-// ---------------- MAIN API ----------------
 app.get("/api/sensor-data", async (req, res) => {
   try {
 
-    // -------- GENERATE RANDOM DATA --------
     const randomData = generateRandomData();
 
     const evaluation = evaluateWaterQuality(randomData);
@@ -94,7 +88,6 @@ app.get("/api/sensor-data", async (req, res) => {
 
     console.log("Generated new sensor data");
 
-    // -------- FETCH LATEST 20 RECORDS --------
     const data = await SensorData.find()
       .sort({ timestamp: -1 })
       .limit(20);
@@ -111,7 +104,6 @@ app.get("/api/sensor-data", async (req, res) => {
   }
 });
 
-// ---------------- START SERVER ----------------
 mongoose.connect(MONGO_URI)
   .then(() => {
     console.log("MongoDB Connected");

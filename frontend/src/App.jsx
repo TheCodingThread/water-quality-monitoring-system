@@ -64,7 +64,6 @@ function App() {
   const [data, setData] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
 
-  // Fetch data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -87,7 +86,6 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Theme effect
   useEffect(() => {
   if (darkMode) {
     document.body.classList.add("dark");
