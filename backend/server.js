@@ -3,6 +3,8 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const SensorData = require("./models/SensorData");
 
+require("dotenv").config();
+
 const app = express();
 
 app.use(cors());
@@ -10,8 +12,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 
-const MONGO_URI =
-  "mongodb+srv://admin:water12345@water-quality-cluster.xfw4xk0.mongodb.net/?appName=water-quality-cluster";
+const MONGO_URI = process.env.MONGO_URI;
 
 function evaluateWaterQuality(data) {
   let issues = [];
