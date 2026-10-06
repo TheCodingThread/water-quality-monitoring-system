@@ -29,6 +29,10 @@ function evaluateWaterQuality(data) {
     issues.push("High TDS");
   }
 
+  if (data.temperature > 30) {
+    issues.push("High temperature");
+  }
+
   return {
     status: issues.length === 0 ? "SAFE" : "UNSAFE",
     issues,
@@ -38,8 +42,7 @@ function evaluateWaterQuality(data) {
 function generateRandomData() {
   const locations = ["Jaipur", "Delhi", "Ajmer", "Udaipur"];
 
-  const location =
-    locations[Math.floor(Math.random() * locations.length)];
+  const location = locations[Math.floor(Math.random() * locations.length)];
 
   const isSafe = Math.random() < 0.8;
 
@@ -50,9 +53,10 @@ function generateRandomData() {
     tds = Math.floor(Math.random() * (500 - 200) + 200);
     turbidity = +(Math.random() * (5 - 1) + 1).toFixed(2);
   } else {
-    pH = +(Math.random() < 0.5
-      ? Math.random() * (6.4 - 4) + 4
-      : Math.random() * (10 - 8.6) + 8.6
+    pH = +(
+      Math.random() < 0.5
+        ? Math.random() * (6.4 - 4) + 4
+        : Math.random() * (10 - 8.6) + 8.6
     ).toFixed(2);
 
     tds = Math.floor(Math.random() * (1200 - 700) + 700);
@@ -74,7 +78,6 @@ app.get("/", (req, res) => {
 
 app.get("/api/sensor-data", async (req, res) => {
   try {
-
     const randomData = generateRandomData();
 
     const evaluation = evaluateWaterQuality(randomData);
@@ -89,14 +92,10 @@ app.get("/api/sensor-data", async (req, res) => {
 
     console.log("Generated new sensor data");
 
-    const data = await SensorData.find()
-      .sort({ timestamp: -1 })
-      .limit(20);
+    const data = await SensorData.find().sort({ timestamp: -1 }).limit(20);
 
     res.json(data);
-
   } catch (error) {
-
     console.error(error.message);
 
     res.status(500).json({
@@ -105,7 +104,8 @@ app.get("/api/sensor-data", async (req, res) => {
   }
 });
 
-mongoose.connect(MONGO_URI)
+mongoose
+  .connect(MONGO_URI)
   .then(() => {
     console.log("MongoDB Connected");
 
