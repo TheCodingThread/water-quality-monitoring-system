@@ -1462,3 +1462,262 @@ body.dark .user-profile {
 
   box-shadow: 0 0 7px rgba(239, 68, 68, 0.5);
 }
+
+/* =========================================
+   ANALYTICS PAGE
+========================================= */
+
+.analytics-container {
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.analytics-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.analytics-stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+}
+
+.analytics-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff;
+  font-size: 22px;
+}
+
+.analytics-stat-card p {
+  margin: 0 0 5px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.analytics-stat-card h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 26px;
+}
+
+.analytics-safe-card .analytics-stat-icon {
+  background: #f0fdf4;
+}
+
+.analytics-unsafe-card .analytics-stat-icon {
+  background: #fef2f2;
+}
+
+/* CHARTS */
+
+.analytics-chart-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.6fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.analytics-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  min-width: 0;
+}
+
+.doughnut-container {
+  height: 300px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.doughnut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.doughnut-center strong {
+  font-size: 28px;
+  color: var(--text-primary);
+}
+
+.doughnut-center span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.analytics-line-chart {
+  height: 300px;
+}
+
+/* SECTIONS */
+
+.analytics-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 24px;
+}
+
+/* PARAMETERS */
+
+.parameter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.parameter-card {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-hover);
+}
+
+.parameter-card span {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.parameter-card strong {
+  display: block;
+  font-size: 28px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.parameter-card small {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+/* LOCATION ANALYTICS */
+
+.location-analytics {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.location-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 65px 120px;
+  align-items: center;
+  gap: 16px;
+}
+
+.location-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.location-name strong {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.location-progress {
+  height: 9px;
+  background: var(--surface-hover);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.location-progress-bar {
+  height: 100%;
+  background: #16a34a;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.location-percentage {
+  text-align: right;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.location-count {
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-align: right;
+}
+
+/* DARK MODE */
+
+body.dark .analytics-stat-icon {
+  background: #172554;
+}
+
+body.dark .analytics-safe-card .analytics-stat-icon {
+  background: #052e16;
+}
+
+body.dark .analytics-unsafe-card .analytics-stat-icon {
+  background: #450a0a;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1200px) {
+
+  .analytics-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .parameter-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .analytics-chart-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media (max-width: 700px) {
+
+  .analytics-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .parameter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .location-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .location-percentage,
+  .location-count {
+    text-align: left;
+  }
+
+}

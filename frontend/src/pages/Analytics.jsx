@@ -1,0 +1,520 @@
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+} from "chart.js";
+
+import { Doughnut, Line } from "react-chartjs-2";
+
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement
+);
+
+function Analytics({ data, darkMode }) {
+  const totalReadings = data.length;
+
+  const safeReadings = data.filter(
+    (item) => item.status === "SAFE"
+  ).length;
+
+  const unsafeReadings = data.filter(
+    (item) => item.status === "UNSAFE"
+  ).length;
+
+  const safePercentage =
+    totalReadings > 0
+      ? ((safeReadings / totalReadings) * 100).toFixed(1)
+      : "0.0";
+
+  const unsafePercentage =
+    totalReadings > 0
+      ? ((unsafeReadings / totalReadings) * 100).toFixed(1)
+      : "0.0";
+
+  const average = (values) => {
+    if (values.length === 0) return "0.00";
+
+    return (
+      values.reduce((sum, value) => sum + value, 0) /
+      values.length
+    ).toFixed(2);
+  };
+
+  const avgPH = average(data.map((item) => item.pH));
+
+  const avgTDS = average(
+    data.map((item) => item.tds)
+  );
+
+  const avgTurbidity = average(
+    data.map((item) => item.turbidity)
+  );
+
+  const avgTemperature = average(
+    data.map((item) => item.temperature)
+  );
+
+  /* -----------------------------
+     DOUGHNUT CHART
+  ----------------------------- */
+
+  const doughnutData = {
+    labels: ["Safe", "Unsafe"],
+
+    datasets: [
+      {
+        data: [safeReadings, unsafeReadings],
+
+        backgroundColor: [
+          "#16a34a",
+          "#dc2626",
+        ],
+
+        borderWidth: 0,
+
+        hoverOffset: 6,
+      },
+    ],
+  };
+
+  const doughnutOptions = {
+    responsive: true,
+
+    maintainAspectRatio: false,
+
+    cutout: "72%",
+
+    plugins: {
+      legend: {
+        position: "bottom",
+
+        labels: {
+          color: darkMode
+            ? "#f8fafc"
+            : "#334155",
+
+          padding: 20,
+
+          usePointStyle: true,
+        },
+      },
+    },
+  };
+
+  /* -----------------------------
+     PARAMETER TREND CHART
+  ----------------------------- */
+
+  const chartData = {
+    labels: [...data]
+      .reverse()
+      .map((item) =>
+        new Date(item.timestamp).toLocaleTimeString()
+      ),
+
+    datasets: [
+      {
+        label: "pH",
+
+        data: [...data]
+          .reverse()
+          .map((item) => item.pH),
+
+        borderColor: "#3b82f6",
+
+        backgroundColor:
+          "rgba(59, 130, 246, 0.08)",
+
+        borderWidth: 2,
+
+        pointRadius: 2,
+
+        pointHoverRadius: 5,
+
+        tension: 0.35,
+      },
+
+      {
+        label: "Turbidity",
+
+        data: [...data]
+          .reverse()
+          .map((item) => item.turbidity),
+
+        borderColor: "#ef4444",
+
+        backgroundColor:
+          "rgba(239, 68, 68, 0.08)",
+
+        borderWidth: 2,
+
+        pointRadius: 2,
+
+        pointHoverRadius: 5,
+
+        tension: 0.35,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+
+    maintainAspectRatio: false,
+
+    interaction: {
+      mode: "index",
+      intersect: false,
+    },
+
+    plugins: {
+      legend: {
+        position: "top",
+
+        labels: {
+          color: darkMode
+            ? "#f8fafc"
+            : "#334155",
+
+          usePointStyle: true,
+        },
+      },
+    },
+
+    scales: {
+      x: {
+        ticks: {
+          color: darkMode
+            ? "#94a3b8"
+            : "#64748b",
+        },
+
+        grid: {
+          display: false,
+        },
+      },
+
+      y: {
+        beginAtZero: true,
+
+        ticks: {
+          color: darkMode
+            ? "#94a3b8"
+            : "#64748b",
+        },
+
+        grid: {
+          color: darkMode
+            ? "#1e293b"
+            : "#e2e8f0",
+        },
+      },
+    },
+  };
+
+  /* -----------------------------
+     CITY ANALYTICS
+  ----------------------------- */
+
+  const cityStats = {};
+
+  data.forEach((item) => {
+    if (!cityStats[item.location]) {
+      cityStats[item.location] = {
+        total: 0,
+        safe: 0,
+        unsafe: 0,
+      };
+    }
+
+    cityStats[item.location].total++;
+
+    if (item.status === "SAFE") {
+      cityStats[item.location].safe++;
+    } else {
+      cityStats[item.location].unsafe++;
+    }
+  });
+
+  return (
+    <div className="analytics-container">
+
+      {/* HEADER */}
+
+      <div className="dashboard-header">
+        <h1>Analytics</h1>
+
+        <p>
+          Analyze water quality performance
+          and sensor measurements.
+        </p>
+      </div>
+
+      {/* KPI CARDS */}
+
+      <div className="analytics-stats-grid">
+
+        <div className="analytics-stat-card">
+          <span className="analytics-stat-icon">
+            📊
+          </span>
+
+          <div>
+            <p>Total Readings</p>
+            <h2>{totalReadings}</h2>
+          </div>
+        </div>
+
+        <div className="analytics-stat-card analytics-safe-card">
+          <span className="analytics-stat-icon">
+            ✓
+          </span>
+
+          <div>
+            <p>Safe Percentage</p>
+            <h2>{safePercentage}%</h2>
+          </div>
+        </div>
+
+        <div className="analytics-stat-card analytics-unsafe-card">
+          <span className="analytics-stat-icon">
+            ⚠
+          </span>
+
+          <div>
+            <p>Unsafe Percentage</p>
+            <h2>{unsafePercentage}%</h2>
+          </div>
+        </div>
+
+        <div className="analytics-stat-card">
+          <span className="analytics-stat-icon">
+            🧪
+          </span>
+
+          <div>
+            <p>Average pH</p>
+            <h2>{avgPH}</h2>
+          </div>
+        </div>
+
+      </div>
+
+      {/* CHART ROW */}
+
+      <div className="analytics-chart-grid">
+
+        {/* DOUGHNUT */}
+
+        <div className="analytics-card">
+
+          <div className="section-heading">
+            <div>
+              <h2>Water Quality Distribution</h2>
+
+              <p>
+                Safe vs unsafe sensor readings
+              </p>
+            </div>
+          </div>
+
+          <div className="doughnut-container">
+
+            <Doughnut
+              data={doughnutData}
+              options={doughnutOptions}
+            />
+
+            <div className="doughnut-center">
+
+              <strong>
+                {safePercentage}%
+              </strong>
+
+              <span>Safe</span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* TREND */}
+
+        <div className="analytics-card">
+
+          <div className="section-heading">
+            <div>
+              <h2>Parameter Trends</h2>
+
+              <p>
+                Recent pH and turbidity measurements
+              </p>
+            </div>
+          </div>
+
+          <div className="analytics-line-chart">
+
+            <Line
+              data={chartData}
+              options={chartOptions}
+            />
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* PARAMETERS */}
+
+      <div className="analytics-section">
+
+        <div className="section-heading">
+
+          <div>
+            <h2>Average Water Parameters</h2>
+
+            <p>
+              Average measurements from recent
+              sensor readings
+            </p>
+          </div>
+
+        </div>
+
+        <div className="parameter-grid">
+
+          <div className="parameter-card">
+            <span>pH</span>
+
+            <strong>{avgPH}</strong>
+
+            <small>
+              Recommended: 6.5 – 8.5
+            </small>
+          </div>
+
+          <div className="parameter-card">
+            <span>TDS</span>
+
+            <strong>{avgTDS}</strong>
+
+            <small>
+              Safe limit: ≤ 500 ppm
+            </small>
+          </div>
+
+          <div className="parameter-card">
+            <span>Turbidity</span>
+
+            <strong>{avgTurbidity}</strong>
+
+            <small>
+              Safe limit: ≤ 5 NTU
+            </small>
+          </div>
+
+          <div className="parameter-card">
+            <span>Temperature</span>
+
+            <strong>
+              {avgTemperature}°C
+            </strong>
+
+            <small>
+              Safe limit: ≤ 30°C
+            </small>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* CITY ANALYTICS */}
+
+      <div className="analytics-section">
+
+        <div className="section-heading">
+
+          <div>
+            <h2>Location Performance</h2>
+
+            <p>
+              Water quality distribution by location
+            </p>
+          </div>
+
+        </div>
+
+        <div className="location-analytics">
+
+          {Object.entries(cityStats).map(
+            ([city, stats]) => {
+
+              const percentage =
+                stats.total > 0
+                  ? (
+                      (stats.safe /
+                        stats.total) *
+                      100
+                    ).toFixed(1)
+                  : 0;
+
+              return (
+                <div
+                  className="location-row"
+                  key={city}
+                >
+
+                  <div className="location-name">
+                    <span>📍</span>
+
+                    <strong>{city}</strong>
+                  </div>
+
+                  <div className="location-progress">
+
+                    <div
+                      className="location-progress-bar"
+                      style={{
+                        width: `${percentage}%`,
+                      }}
+                    ></div>
+
+                  </div>
+
+                  <div className="location-percentage">
+                    {percentage}%
+                  </div>
+
+                  <div className="location-count">
+                    {stats.safe} safe /{" "}
+                    {stats.unsafe} unsafe
+                  </div>
+
+                </div>
+              );
+            }
+          )}
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+export default Analytics;

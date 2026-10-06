@@ -21,6 +21,7 @@ import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
 import StatCard from "./components/StatCard";
 import SystemStatus from "./components/SystemStatus";
+import Analytics from "./pages/Analytics";
 
 ChartJS.register(
   LineElement,
@@ -282,288 +283,296 @@ function App() {
         <Topbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
         <main className="main-content">
-          <div className="dashboard-container">
-            <div className="dashboard-header">
-              <h1>Good evening, Sebin 👋</h1>
+          {activePage === "analytics" ? (
+            <Analytics data={data} darkMode={darkMode} />
+          ) : (
+            <div className="dashboard-container">
+              <div className="dashboard-header">
+                <h1>Good evening, Sebin 👋</h1>
 
-              <p>Here's what's happening with your water monitoring system.</p>
-            </div>
+                <p>
+                  Here's what's happening with your water monitoring system.
+                </p>
+              </div>
 
-            <div className="stats-grid">
-              <StatCard title="Water Quality" icon="💧" variant="blue">
-                <div className="water-quality-status">
-                  <div className="quality-group safe-group">
-                    <div className="quality-label">
-                      <span className="quality-dot safe-dot"></span>
-                      SAFE
+              <div className="stats-grid">
+                <StatCard title="Water Quality" icon="💧" variant="blue">
+                  <div className="water-quality-status">
+                    <div className="quality-group safe-group">
+                      <div className="quality-label">
+                        <span className="quality-dot safe-dot"></span>
+                        SAFE
+                      </div>
+
+                      <div className="quality-locations">
+                        {safeLocations.length > 0
+                          ? safeLocations.join(" • ")
+                          : "No safe locations"}
+                      </div>
                     </div>
 
-                    <div className="quality-locations">
-                      {safeLocations.length > 0
-                        ? safeLocations.join(" • ")
-                        : "No safe locations"}
+                    <div className="quality-group unsafe-group">
+                      <div className="quality-label">
+                        <span className="quality-dot unsafe-dot"></span>
+                        UNSAFE
+                      </div>
+
+                      <div className="quality-locations">
+                        {unsafeLocations.length > 0
+                          ? unsafeLocations.join(" • ")
+                          : "No unsafe locations"}
+                      </div>
                     </div>
                   </div>
+                </StatCard>
 
-                  <div className="quality-group unsafe-group">
-                    <div className="quality-label">
-                      <span className="quality-dot unsafe-dot"></span>
-                      UNSAFE
+                <StatCard
+                  title="Total Readings"
+                  value={data.length}
+                  subtitle="Latest sensor records"
+                  icon="📊"
+                  variant="blue"
+                />
+
+                <StatCard
+                  title="Safe Readings"
+                  value={
+                    data.length > 0
+                      ? `${data.filter((item) => item.status === "SAFE").length}`
+                      : "0"
+                  }
+                  subtitle="Within safe limits"
+                  icon="✓"
+                  variant="green"
+                />
+
+                <StatCard
+                  title="Unsafe Readings"
+                  value={
+                    data.length > 0
+                      ? `${data.filter((item) => item.status === "UNSAFE").length}`
+                      : "0"
+                  }
+                  subtitle="Require attention"
+                  icon="⚠"
+                  variant="red"
+                />
+              </div>
+
+              <div className="dashboard-grid-top">
+                <div className="dashboard-card sensor-card">
+                  <div className="section-heading">
+                    <div>
+                      <h2>Recent Sensor Readings</h2>
+                      <p>Latest water quality measurements</p>
                     </div>
 
-                    <div className="quality-locations">
-                      {unsafeLocations.length > 0
-                        ? unsafeLocations.join(" • ")
-                        : "No unsafe locations"}
-                    </div>
+                    <span className="reading-count">
+                      Latest {Math.min(data.length, 8)}
+                    </span>
+                  </div>
+
+                  <div className="table-wrapper">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Location</th>
+                          <th>pH</th>
+                          <th>TDS</th>
+                          <th>Turbidity</th>
+                          <th>Temperature</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {data.slice(0, 8).map((d) => (
+                          <tr key={d._id}>
+                            <td>
+                              <div className="location-cell">
+                                <span className="location-icon">📍</span>
+                                <span>{d.location}</span>
+                              </div>
+                            </td>
+
+                            <td>
+                              <span className="sensor-value">{d.pH}</span>
+                            </td>
+
+                            <td>
+                              <span className="sensor-value">{d.tds}</span>
+                            </td>
+
+                            <td>
+                              <span className="sensor-value">
+                                {d.turbidity}
+                              </span>
+                            </td>
+
+                            <td>
+                              <span className="sensor-value">
+                                {d.temperature}°C
+                              </span>
+                            </td>
+
+                            <td>
+                              <div className="status-cell">
+                                <span
+                                  className={`status-badge ${
+                                    d.status === "SAFE"
+                                      ? "status-safe"
+                                      : "status-unsafe"
+                                  }`}
+                                >
+                                  <span className="status-badge-dot"></span>
+
+                                  {d.status}
+                                </span>
+
+                                {d.status === "UNSAFE" &&
+                                  d.issues?.length > 0 && (
+                                    <div className="status-issues">
+                                      {d.issues.join(" • ")}
+                                    </div>
+                                  )}
+
+                                {d.status === "SAFE" && (
+                                  <div className="status-normal">
+                                    All parameters normal
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-              </StatCard>
+              </div>
 
-              <StatCard
-                title="Total Readings"
-                value={data.length}
-                subtitle="Latest sensor records"
-                icon="📊"
-                variant="blue"
-              />
+              <div className="dashboard-grid-bottom">
+                <div className="dashboard-card chart-card">
+                  <div className="section-heading">
+                    <div>
+                      <h2>Water Quality Trends</h2>
+                      <p>Recent sensor measurements</p>
+                    </div>
 
-              <StatCard
-                title="Safe Readings"
-                value={
-                  data.length > 0
-                    ? `${data.filter((item) => item.status === "SAFE").length}`
-                    : "0"
-                }
-                subtitle="Within safe limits"
-                icon="✓"
-                variant="green"
-              />
-
-              <StatCard
-                title="Unsafe Readings"
-                value={
-                  data.length > 0
-                    ? `${data.filter((item) => item.status === "UNSAFE").length}`
-                    : "0"
-                }
-                subtitle="Require attention"
-                icon="⚠"
-                variant="red"
-              />
-            </div>
-
-            <div className="dashboard-grid-top">
-              <div className="dashboard-card sensor-card">
-                <div className="section-heading">
-                  <div>
-                    <h2>Recent Sensor Readings</h2>
-                    <p>Latest water quality measurements</p>
+                    <span className="live-badge">
+                      <span className="live-dot"></span>
+                      LIVE
+                    </span>
                   </div>
 
-                  <span className="reading-count">
-                    Latest {Math.min(data.length, 8)}
-                  </span>
+                  <div className="chart-container">
+                    <Line data={chartData} options={chartOptions} />
+                  </div>
                 </div>
 
-                <div className="table-wrapper">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Location</th>
-                        <th>pH</th>
-                        <th>TDS</th>
-                        <th>Turbidity</th>
-                        <th>Temperature</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
+                <div className="dashboard-card map-card">
+                  <div className="section-heading">
+                    <div>
+                      <h2>Water Quality Map</h2>
+                      <p>Geographic monitoring</p>
+                    </div>
 
-                    <tbody>
-                      {data.slice(0, 8).map((d) => (
-                        <tr key={d._id}>
-                          <td>
-                            <div className="location-cell">
-                              <span className="location-icon">📍</span>
-                              <span>{d.location}</span>
-                            </div>
-                          </td>
+                    <span className="map-count">
+                      {latestByLocation.length} locations
+                    </span>
+                  </div>
 
-                          <td>
-                            <span className="sensor-value">{d.pH}</span>
-                          </td>
+                  <MapContainer
+                    center={[26.9124, 75.7873]}
+                    zoom={6}
+                    style={{
+                      height: "400px",
+                      width: "100%",
+                      borderRadius: "12px",
+                    }}
+                  >
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-                          <td>
-                            <span className="sensor-value">{d.tds}</span>
-                          </td>
+                    {latestByLocation.map((d) =>
+                      cityCoordinates[d.location] ? (
+                        <Marker
+                          key={d.location}
+                          position={cityCoordinates[d.location]}
+                          icon={d.status === "SAFE" ? greenIcon : redIcon}
+                        >
+                          <Popup>
+                            <div className="map-popup">
+                              <div className="popup-location">{d.location}</div>
 
-                          <td>
-                            <span className="sensor-value">{d.turbidity}</span>
-                          </td>
-
-                          <td>
-                            <span className="sensor-value">
-                              {d.temperature}°C
-                            </span>
-                          </td>
-
-                          <td>
-                            <div className="status-cell">
-                              <span
-                                className={`status-badge ${
+                              <div
+                                className={`popup-status ${
                                   d.status === "SAFE"
-                                    ? "status-safe"
-                                    : "status-unsafe"
+                                    ? "popup-safe"
+                                    : "popup-unsafe"
                                 }`}
                               >
-                                <span className="status-badge-dot"></span>
-
                                 {d.status}
-                              </span>
+                              </div>
+
+                              <div className="popup-readings">
+                                <div>
+                                  <span>pH</span>
+                                  <strong>{d.pH}</strong>
+                                </div>
+
+                                <div>
+                                  <span>TDS</span>
+                                  <strong>{d.tds}</strong>
+                                </div>
+
+                                <div>
+                                  <span>Turbidity</span>
+                                  <strong>{d.turbidity}</strong>
+                                </div>
+
+                                <div>
+                                  <span>Temperature</span>
+                                  <strong>{d.temperature}°C</strong>
+                                </div>
+                              </div>
+
+                              <div className="popup-updated">
+                                Last updated:{" "}
+                                {new Date(d.timestamp).toLocaleTimeString()}
+                              </div>
 
                               {d.status === "UNSAFE" &&
                                 d.issues?.length > 0 && (
-                                  <div className="status-issues">
-                                    {d.issues.join(" • ")}
+                                  <div className="popup-issues">
+                                    <strong>Issues</strong>
+
+                                    {d.issues.map((issue, index) => (
+                                      <div key={index}>• {issue}</div>
+                                    ))}
                                   </div>
                                 )}
-
-                              {d.status === "SAFE" && (
-                                <div className="status-normal">
-                                  All parameters normal
-                                </div>
-                              )}
                             </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          </Popup>
+                        </Marker>
+                      ) : null,
+                    )}
+                  </MapContainer>
+
+                  <div className="map-legend">
+                    <div className="legend-item">
+                      <span className="legend-dot legend-safe"></span>
+                      <span>Safe Water</span>
+                    </div>
+
+                    <div className="legend-item">
+                      <span className="legend-dot legend-unsafe"></span>
+                      <span>Unsafe Water</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-
-            <div className="dashboard-grid-bottom">
-              <div className="dashboard-card chart-card">
-                <div className="section-heading">
-                  <div>
-                    <h2>Water Quality Trends</h2>
-                    <p>Recent sensor measurements</p>
-                  </div>
-
-                  <span className="live-badge">
-                    <span className="live-dot"></span>
-                    LIVE
-                  </span>
-                </div>
-
-                <div className="chart-container">
-                  <Line data={chartData} options={chartOptions} />
-                </div>
-              </div>
-
-              <div className="dashboard-card map-card">
-                <div className="section-heading">
-                  <div>
-                    <h2>Water Quality Map</h2>
-                    <p>Geographic monitoring</p>
-                  </div>
-
-                  <span className="map-count">
-                    {latestByLocation.length} locations
-                  </span>
-                </div>
-
-                <MapContainer
-                  center={[26.9124, 75.7873]}
-                  zoom={6}
-                  style={{
-                    height: "400px",
-                    width: "100%",
-                    borderRadius: "12px",
-                  }}
-                >
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-                  {latestByLocation.map((d) =>
-                    cityCoordinates[d.location] ? (
-                      <Marker
-                        key={d.location}
-                        position={cityCoordinates[d.location]}
-                        icon={d.status === "SAFE" ? greenIcon : redIcon}
-                      >
-                        <Popup>
-                          <div className="map-popup">
-                            <div className="popup-location">{d.location}</div>
-
-                            <div
-                              className={`popup-status ${
-                                d.status === "SAFE"
-                                  ? "popup-safe"
-                                  : "popup-unsafe"
-                              }`}
-                            >
-                              {d.status}
-                            </div>
-
-                            <div className="popup-readings">
-                              <div>
-                                <span>pH</span>
-                                <strong>{d.pH}</strong>
-                              </div>
-
-                              <div>
-                                <span>TDS</span>
-                                <strong>{d.tds}</strong>
-                              </div>
-
-                              <div>
-                                <span>Turbidity</span>
-                                <strong>{d.turbidity}</strong>
-                              </div>
-
-                              <div>
-                                <span>Temperature</span>
-                                <strong>{d.temperature}°C</strong>
-                              </div>
-                            </div>
-
-                            <div className="popup-updated">
-                              Last updated:{" "}
-                              {new Date(d.timestamp).toLocaleTimeString()}
-                            </div>
-
-                            {d.status === "UNSAFE" && d.issues?.length > 0 && (
-                              <div className="popup-issues">
-                                <strong>Issues</strong>
-
-                                {d.issues.map((issue, index) => (
-                                  <div key={index}>• {issue}</div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </Popup>
-                      </Marker>
-                    ) : null,
-                  )}
-                </MapContainer>
-
-                <div className="map-legend">
-                  <div className="legend-item">
-                    <span className="legend-dot legend-safe"></span>
-                    <span>Safe Water</span>
-                  </div>
-
-                  <div className="legend-item">
-                    <span className="legend-dot legend-unsafe"></span>
-                    <span>Unsafe Water</span>
-                  </div>
-                </div>
-                
-              </div>
-            </div>
-          </div>
+          )}
         </main>
       </div>
     </div>
