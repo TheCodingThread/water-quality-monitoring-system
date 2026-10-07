@@ -63,6 +63,7 @@ function App() {
   const [data, setData] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
   const [activePage, setActivePage] = useState("dashboard");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -286,10 +287,26 @@ function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar activePage={activePage} setActivePage={setActivePage} />
+      <Sidebar
+        activePage={activePage}
+        setActivePage={setActivePage}
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
+      />
+
+      {mobileMenuOpen && (
+        <div
+          className="mobile-menu-overlay"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
 
       <div className="main-layout">
-        <Topbar darkMode={darkMode} setDarkMode={setDarkMode} />
+        <Topbar
+          darkMode={darkMode}
+          setDarkMode={setDarkMode}
+          setMobileMenuOpen={setMobileMenuOpen}
+        />
 
         <main className="main-content">
           {activePage === "analytics" ? (

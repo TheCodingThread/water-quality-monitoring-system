@@ -1,7 +1,14 @@
-function Topbar({ darkMode, setDarkMode }) {
+function Topbar({ darkMode, setDarkMode, setMobileMenuOpen }) {
   return (
     <header className="topbar">
       <div className="topbar-left">
+        <button
+          className="mobile-menu-button"
+          onClick={() => setMobileMenuOpen(true)}
+          aria-label="Open navigation"
+        >
+          ☰
+        </button>
         <div className="breadcrumb">
           <span>Water Intelligence</span>
           <span>/</span>
