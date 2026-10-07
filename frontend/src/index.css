@@ -1721,3 +1721,85 @@ body.dark .analytics-unsafe-card .analytics-stat-icon {
   }
 
 }
+
+/* =========================================
+   ANALYTICS HEADER & FILTER
+========================================= */
+
+.analytics-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.analytics-header .dashboard-header {
+  margin-bottom: 0;
+}
+
+.analytics-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.analytics-filter label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.analytics-filter select {
+  min-width: 150px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+}
+
+.analytics-filter select:focus {
+  border-color: #2563eb;
+}
+
+.analytics-loading {
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+@media (max-width: 700px) {
+
+  .analytics-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .analytics-filter {
+    justify-content: space-between;
+  }
+
+  .analytics-filter select {
+    flex: 1;
+  }
+
+}
+
+/* Dark mode dropdown options */
+body.dark .analytics-filter select {
+  background: var(--surface);
+  color: var(--text-primary);
+  color-scheme: dark;
+}
+
+body.dark .analytics-filter select option {
+  background: #111827;
+  color: #f8fafc;
+}

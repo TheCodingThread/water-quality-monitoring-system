@@ -76,7 +76,11 @@ app.get("/", (req, res) => {
   res.send("Backend Running");
 });
 
-app.get("/api/sensor-data", async (req, res) => {
+// ==========================================
+// CREATE / SIMULATE SENSOR READING
+// ==========================================
+
+app.post("/api/sensor-data", async (req, res) => {
   try {
     const randomData = generateRandomData();
 
@@ -90,11 +94,81 @@ app.get("/api/sensor-data", async (req, res) => {
 
     await newEntry.save();
 
-    console.log("Generated new sensor data");
+    console.log("New sensor reading created");
 
-    const data = await SensorData.find().sort({ timestamp: -1 }).limit(20);
+    res.status(201).json(newEntry);
+
+  } catch (error) {
+    console.error(error.message);
+
+    res.status(500).json({
+      error: "Server Error",
+    });
+  }
+});
+
+
+// ==========================================
+// GET SENSOR DATA
+// ==========================================
+
+app.get("/api/sensor-data", async (req, res) => {
+  try {
+    const { days, from, to, limit = 20 } = req.query;
+
+    const query = {};
+
+    // --------------------------------------
+    // DATE FILTER
+    // --------------------------------------
+
+    if (from || to) {
+      query.timestamp = {};
+
+      if (from) {
+        query.timestamp.$gte = new Date(from);
+      }
+
+      if (to) {
+        const endDate = new Date(to);
+
+        // Include the complete "to" day
+        endDate.setDate(endDate.getDate() + 1);
+
+        query.timestamp.$lt = endDate;
+      }
+    }
+
+    // --------------------------------------
+    // LAST N DAYS FILTER
+    // --------------------------------------
+
+    else if (days) {
+      const daysNumber = Number(days);
+
+      if (!Number.isNaN(daysNumber) && daysNumber > 0) {
+        const startDate = new Date();
+
+        startDate.setDate(
+          startDate.getDate() - daysNumber
+        );
+
+        query.timestamp = {
+          $gte: startDate,
+        };
+      }
+    }
+
+    // --------------------------------------
+    // FETCH DATA
+    // --------------------------------------
+
+    const data = await SensorData.find(query)
+      .sort({ timestamp: -1 })
+      .limit(Number(limit));
 
     res.json(data);
+
   } catch (error) {
     console.error(error.message);
 

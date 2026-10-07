@@ -67,6 +67,15 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Create a new simulated sensor reading
+        await fetch(
+          "https://water-quality-monitoring-system-sqag.onrender.com/api/sensor-data",
+          {
+            method: "POST",
+          },
+        );
+
+        // Fetch existing sensor readings
         const response = await fetch(
           "https://water-quality-monitoring-system-sqag.onrender.com/api/sensor-data",
         );

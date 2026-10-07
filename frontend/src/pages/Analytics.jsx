@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import {
   Chart as ChartJS,
   ArcElement,
@@ -18,18 +20,44 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
-  LineElement
+  LineElement,
 );
 
 function Analytics({ data, darkMode }) {
-  const totalReadings = data.length;
+  const [analyticsData, setAnalyticsData] = useState(data);
+  const [period, setPeriod] = useState("7");
+  const [loading, setLoading] = useState(false);
 
-  const safeReadings = data.filter(
-    (item) => item.status === "SAFE"
+  useEffect(() => {
+    const fetchHistoricalData = async () => {
+      try {
+        setLoading(true);
+
+        const response = await fetch(
+          `https://water-quality-monitoring-system-sqag.onrender.com/api/sensor-data?days=${period}&limit=5000`,
+        );
+
+        const result = await response.json();
+
+        setAnalyticsData(result);
+      } catch (error) {
+        console.error("Failed to fetch historical analytics:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistoricalData();
+  }, [period]);
+
+  const totalReadings = analyticsData.length;
+
+  const safeReadings = analyticsData.filter(
+    (item) => item.status === "SAFE",
   ).length;
 
-  const unsafeReadings = data.filter(
-    (item) => item.status === "UNSAFE"
+  const unsafeReadings = analyticsData.filter(
+    (item) => item.status === "UNSAFE",
   ).length;
 
   const safePercentage =
@@ -46,24 +74,17 @@ function Analytics({ data, darkMode }) {
     if (values.length === 0) return "0.00";
 
     return (
-      values.reduce((sum, value) => sum + value, 0) /
-      values.length
+      values.reduce((sum, value) => sum + value, 0) / values.length
     ).toFixed(2);
   };
 
-  const avgPH = average(data.map((item) => item.pH));
+  const avgPH = average(analyticsData.map((item) => item.pH));
 
-  const avgTDS = average(
-    data.map((item) => item.tds)
-  );
+  const avgTDS = average(analyticsData.map((item) => item.tds));
 
-  const avgTurbidity = average(
-    data.map((item) => item.turbidity)
-  );
+  const avgTurbidity = average(analyticsData.map((item) => item.turbidity));
 
-  const avgTemperature = average(
-    data.map((item) => item.temperature)
-  );
+  const avgTemperature = average(analyticsData.map((item) => item.temperature));
 
   /* -----------------------------
      DOUGHNUT CHART
@@ -76,10 +97,7 @@ function Analytics({ data, darkMode }) {
       {
         data: [safeReadings, unsafeReadings],
 
-        backgroundColor: [
-          "#16a34a",
-          "#dc2626",
-        ],
+        backgroundColor: ["#16a34a", "#dc2626"],
 
         borderWidth: 0,
 
@@ -100,9 +118,7 @@ function Analytics({ data, darkMode }) {
         position: "bottom",
 
         labels: {
-          color: darkMode
-            ? "#f8fafc"
-            : "#334155",
+          color: darkMode ? "#f8fafc" : "#334155",
 
           padding: 20,
 
@@ -119,22 +135,17 @@ function Analytics({ data, darkMode }) {
   const chartData = {
     labels: [...data]
       .reverse()
-      .map((item) =>
-        new Date(item.timestamp).toLocaleTimeString()
-      ),
+      .map((item) => new Date(item.timestamp).toLocaleTimeString()),
 
     datasets: [
       {
         label: "pH",
 
-        data: [...data]
-          .reverse()
-          .map((item) => item.pH),
+        data: [...analyticsData].reverse().map((item) => item.pH),
 
         borderColor: "#3b82f6",
 
-        backgroundColor:
-          "rgba(59, 130, 246, 0.08)",
+        backgroundColor: "rgba(59, 130, 246, 0.08)",
 
         borderWidth: 2,
 
@@ -148,14 +159,11 @@ function Analytics({ data, darkMode }) {
       {
         label: "Turbidity",
 
-        data: [...data]
-          .reverse()
-          .map((item) => item.turbidity),
+        data: [...analyticsData].reverse().map((item) => item.turbidity),
 
         borderColor: "#ef4444",
 
-        backgroundColor:
-          "rgba(239, 68, 68, 0.08)",
+        backgroundColor: "rgba(239, 68, 68, 0.08)",
 
         borderWidth: 2,
 
@@ -183,9 +191,7 @@ function Analytics({ data, darkMode }) {
         position: "top",
 
         labels: {
-          color: darkMode
-            ? "#f8fafc"
-            : "#334155",
+          color: darkMode ? "#f8fafc" : "#334155",
 
           usePointStyle: true,
         },
@@ -195,9 +201,7 @@ function Analytics({ data, darkMode }) {
     scales: {
       x: {
         ticks: {
-          color: darkMode
-            ? "#94a3b8"
-            : "#64748b",
+          color: darkMode ? "#94a3b8" : "#64748b",
         },
 
         grid: {
@@ -209,15 +213,11 @@ function Analytics({ data, darkMode }) {
         beginAtZero: true,
 
         ticks: {
-          color: darkMode
-            ? "#94a3b8"
-            : "#64748b",
+          color: darkMode ? "#94a3b8" : "#64748b",
         },
 
         grid: {
-          color: darkMode
-            ? "#1e293b"
-            : "#e2e8f0",
+          color: darkMode ? "#1e293b" : "#e2e8f0",
         },
       },
     },
@@ -229,7 +229,7 @@ function Analytics({ data, darkMode }) {
 
   const cityStats = {};
 
-  data.forEach((item) => {
+  analyticsData.forEach((item) => {
     if (!cityStats[item.location]) {
       cityStats[item.location] = {
         total: 0,
@@ -249,26 +249,42 @@ function Analytics({ data, darkMode }) {
 
   return (
     <div className="analytics-container">
-
       {/* HEADER */}
 
-      <div className="dashboard-header">
-        <h1>Analytics</h1>
+      <div className="analytics-header">
+        <div className="dashboard-header">
+          <h1>Analytics</h1>
 
-        <p>
-          Analyze water quality performance
-          and sensor measurements.
-        </p>
+          <p>Analyze water quality performance and sensor measurements.</p>
+        </div>
+
+        <div className="analytics-filter">
+          <label htmlFor="period">Time Period</label>
+
+          <select
+            id="period"
+            value={period}
+            onChange={(e) => setPeriod(e.target.value)}
+          >
+            <option value="1">Last 24 Hours</option>
+
+            <option value="7">Last 7 Days</option>
+
+            <option value="30">Last 30 Days</option>
+
+            <option value="90">Last 90 Days</option>
+          </select>
+        </div>
       </div>
+      {loading && (
+        <div className="analytics-loading">Updating analytics...</div>
+      )}
 
       {/* KPI CARDS */}
 
       <div className="analytics-stats-grid">
-
         <div className="analytics-stat-card">
-          <span className="analytics-stat-icon">
-            📊
-          </span>
+          <span className="analytics-stat-icon">📊</span>
 
           <div>
             <p>Total Readings</p>
@@ -277,9 +293,7 @@ function Analytics({ data, darkMode }) {
         </div>
 
         <div className="analytics-stat-card analytics-safe-card">
-          <span className="analytics-stat-icon">
-            ✓
-          </span>
+          <span className="analytics-stat-icon">✓</span>
 
           <div>
             <p>Safe Percentage</p>
@@ -288,9 +302,7 @@ function Analytics({ data, darkMode }) {
         </div>
 
         <div className="analytics-stat-card analytics-unsafe-card">
-          <span className="analytics-stat-icon">
-            ⚠
-          </span>
+          <span className="analytics-stat-icon">⚠</span>
 
           <div>
             <p>Unsafe Percentage</p>
@@ -299,111 +311,75 @@ function Analytics({ data, darkMode }) {
         </div>
 
         <div className="analytics-stat-card">
-          <span className="analytics-stat-icon">
-            🧪
-          </span>
+          <span className="analytics-stat-icon">🧪</span>
 
           <div>
             <p>Average pH</p>
             <h2>{avgPH}</h2>
           </div>
         </div>
-
       </div>
 
       {/* CHART ROW */}
 
       <div className="analytics-chart-grid">
-
         {/* DOUGHNUT */}
 
         <div className="analytics-card">
-
           <div className="section-heading">
             <div>
               <h2>Water Quality Distribution</h2>
 
-              <p>
-                Safe vs unsafe sensor readings
-              </p>
+              <p>Safe vs unsafe sensor readings</p>
             </div>
           </div>
 
           <div className="doughnut-container">
-
-            <Doughnut
-              data={doughnutData}
-              options={doughnutOptions}
-            />
+            <Doughnut data={doughnutData} options={doughnutOptions} />
 
             <div className="doughnut-center">
-
-              <strong>
-                {safePercentage}%
-              </strong>
+              <strong>{safePercentage}%</strong>
 
               <span>Safe</span>
-
             </div>
-
           </div>
-
         </div>
 
         {/* TREND */}
 
         <div className="analytics-card">
-
           <div className="section-heading">
             <div>
               <h2>Parameter Trends</h2>
 
-              <p>
-                Recent pH and turbidity measurements
-              </p>
+              <p>Recent pH and turbidity measurements</p>
             </div>
           </div>
 
           <div className="analytics-line-chart">
-
-            <Line
-              data={chartData}
-              options={chartOptions}
-            />
-
+            <Line data={chartData} options={chartOptions} />
           </div>
-
         </div>
-
       </div>
 
       {/* PARAMETERS */}
 
       <div className="analytics-section">
-
         <div className="section-heading">
-
           <div>
             <h2>Average Water Parameters</h2>
 
-            <p>
-              Average measurements from recent
-              sensor readings
-            </p>
+            <p>Average measurements from recent sensor readings</p>
           </div>
-
         </div>
 
         <div className="parameter-grid">
-
           <div className="parameter-card">
             <span>pH</span>
 
             <strong>{avgPH}</strong>
 
-            <small>
-              Recommended: 6.5 – 8.5
-            </small>
+            <small>Recommended: 6.5 – 8.5</small>
           </div>
 
           <div className="parameter-card">
@@ -411,9 +387,7 @@ function Analytics({ data, darkMode }) {
 
             <strong>{avgTDS}</strong>
 
-            <small>
-              Safe limit: ≤ 500 ppm
-            </small>
+            <small>Safe limit: ≤ 500 ppm</small>
           </div>
 
           <div className="parameter-card">
@@ -421,98 +395,64 @@ function Analytics({ data, darkMode }) {
 
             <strong>{avgTurbidity}</strong>
 
-            <small>
-              Safe limit: ≤ 5 NTU
-            </small>
+            <small>Safe limit: ≤ 5 NTU</small>
           </div>
 
           <div className="parameter-card">
             <span>Temperature</span>
 
-            <strong>
-              {avgTemperature}°C
-            </strong>
+            <strong>{avgTemperature}°C</strong>
 
-            <small>
-              Safe limit: ≤ 30°C
-            </small>
+            <small>Safe limit: ≤ 30°C</small>
           </div>
-
         </div>
-
       </div>
 
       {/* CITY ANALYTICS */}
 
       <div className="analytics-section">
-
         <div className="section-heading">
-
           <div>
             <h2>Location Performance</h2>
 
-            <p>
-              Water quality distribution by location
-            </p>
+            <p>Water quality distribution by location</p>
           </div>
-
         </div>
 
         <div className="location-analytics">
+          {Object.entries(cityStats).map(([city, stats]) => {
+            const percentage =
+              stats.total > 0
+                ? ((stats.safe / stats.total) * 100).toFixed(1)
+                : 0;
 
-          {Object.entries(cityStats).map(
-            ([city, stats]) => {
+            return (
+              <div className="location-row" key={city}>
+                <div className="location-name">
+                  <span>📍</span>
 
-              const percentage =
-                stats.total > 0
-                  ? (
-                      (stats.safe /
-                        stats.total) *
-                      100
-                    ).toFixed(1)
-                  : 0;
-
-              return (
-                <div
-                  className="location-row"
-                  key={city}
-                >
-
-                  <div className="location-name">
-                    <span>📍</span>
-
-                    <strong>{city}</strong>
-                  </div>
-
-                  <div className="location-progress">
-
-                    <div
-                      className="location-progress-bar"
-                      style={{
-                        width: `${percentage}%`,
-                      }}
-                    ></div>
-
-                  </div>
-
-                  <div className="location-percentage">
-                    {percentage}%
-                  </div>
-
-                  <div className="location-count">
-                    {stats.safe} safe /{" "}
-                    {stats.unsafe} unsafe
-                  </div>
-
+                  <strong>{city}</strong>
                 </div>
-              );
-            }
-          )}
 
+                <div className="location-progress">
+                  <div
+                    className="location-progress-bar"
+                    style={{
+                      width: `${percentage}%`,
+                    }}
+                  ></div>
+                </div>
+
+                <div className="location-percentage">{percentage}%</div>
+
+                <div className="location-count">
+                  {stats.safe} safe / {stats.unsafe} unsafe
+                </div>
+              </div>
+            );
+          })}
         </div>
-
       </div>
-
     </div>
   );
 }
