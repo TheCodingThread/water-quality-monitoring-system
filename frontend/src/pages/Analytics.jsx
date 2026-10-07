@@ -28,14 +28,27 @@ function Analytics({ data, darkMode }) {
   const [period, setPeriod] = useState("7");
   const [loading, setLoading] = useState(false);
 
+  const [customRange, setCustomRange] = useState(false);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [appliedFromDate, setAppliedFromDate] = useState("");
+  const [appliedToDate, setAppliedToDate] = useState("");
+
   useEffect(() => {
     const fetchHistoricalData = async () => {
       try {
         setLoading(true);
 
-        const response = await fetch(
-          `https://water-quality-monitoring-system-sqag.onrender.com/api/sensor-data?days=${period}&limit=5000`,
-        );
+        let url =
+          "https://water-quality-monitoring-system-sqag.onrender.com/api/sensor-data";
+
+        if (customRange && appliedFromDate && appliedToDate) {
+          url += `?from=${appliedFromDate}&to=${appliedToDate}&limit=5000`;
+        } else {
+          url += `?days=${period}&limit=5000`;
+        }
+
+        const response = await fetch(url);
 
         const result = await response.json();
 
@@ -48,7 +61,21 @@ function Analytics({ data, darkMode }) {
     };
 
     fetchHistoricalData();
-  }, [period]);
+  }, [period, customRange, appliedFromDate, appliedToDate]);
+
+  const handleApplyCustomRange = () => {
+    if (!fromDate || !toDate) {
+      return;
+    }
+
+    if (fromDate > toDate) {
+      alert("From date cannot be after To date.");
+      return;
+    }
+
+    setAppliedFromDate(fromDate);
+    setAppliedToDate(toDate);
+  };
 
   const totalReadings = analyticsData.length;
 
@@ -78,6 +105,26 @@ function Analytics({ data, darkMode }) {
     ).toFixed(2);
   };
 
+  const getStats = (values) => {
+    if (values.length === 0) {
+      return {
+        average: "0.00",
+        minimum: "0.00",
+        maximum: "0.00",
+      };
+    }
+
+    return {
+      average: (
+        values.reduce((sum, value) => sum + value, 0) / values.length
+      ).toFixed(2),
+
+      minimum: Math.min(...values).toFixed(2),
+
+      maximum: Math.max(...values).toFixed(2),
+    };
+  };
+
   const avgPH = average(analyticsData.map((item) => item.pH));
 
   const avgTDS = average(analyticsData.map((item) => item.tds));
@@ -85,6 +132,16 @@ function Analytics({ data, darkMode }) {
   const avgTurbidity = average(analyticsData.map((item) => item.turbidity));
 
   const avgTemperature = average(analyticsData.map((item) => item.temperature));
+
+  const phStats = getStats(analyticsData.map((item) => item.pH));
+
+  const tdsStats = getStats(analyticsData.map((item) => item.tds));
+
+  const turbidityStats = getStats(analyticsData.map((item) => item.turbidity));
+
+  const temperatureStats = getStats(
+    analyticsData.map((item) => item.temperature),
+  );
 
   /* -----------------------------
      DOUGHNUT CHART
@@ -263,8 +320,19 @@ function Analytics({ data, darkMode }) {
 
           <select
             id="period"
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
+            value={customRange ? "custom" : period}
+            onChange={(e) => {
+              const value = e.target.value;
+
+              if (value === "custom") {
+                setCustomRange(true);
+              } else {
+                setCustomRange(false);
+                setPeriod(value);
+                setAppliedFromDate("");
+                setAppliedToDate("");
+              }
+            }}
           >
             <option value="1">Last 24 Hours</option>
 
@@ -273,8 +341,45 @@ function Analytics({ data, darkMode }) {
             <option value="30">Last 30 Days</option>
 
             <option value="90">Last 90 Days</option>
+
+            <option value="custom">Custom Range</option>
           </select>
         </div>
+        {customRange && (
+          <div className="custom-date-filter">
+            <div className="date-field">
+              <label htmlFor="fromDate">From</label>
+
+              <input
+                id="fromDate"
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+              />
+            </div>
+
+            <span className="date-arrow">→</span>
+
+            <div className="date-field">
+              <label htmlFor="toDate">To</label>
+
+              <input
+                id="toDate"
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+              />
+            </div>
+
+            <button
+              className="apply-date-button"
+              onClick={handleApplyCustomRange}
+              disabled={!fromDate || !toDate}
+            >
+              Apply
+            </button>
+          </div>
+        )}
       </div>
       {loading && (
         <div className="analytics-loading">Updating analytics...</div>
@@ -367,43 +472,129 @@ function Analytics({ data, darkMode }) {
       <div className="analytics-section">
         <div className="section-heading">
           <div>
-            <h2>Average Water Parameters</h2>
+            <h2>Parameter Statistics</h2>
 
-            <p>Average measurements from recent sensor readings</p>
+            <p>
+              Minimum, average and maximum measurements for the selected period
+            </p>
           </div>
         </div>
 
-        <div className="parameter-grid">
-          <div className="parameter-card">
-            <span>pH</span>
+        <div className="parameter-statistics">
+          {/* pH */}
 
-            <strong>{avgPH}</strong>
+          <div className="parameter-stat-card">
+            <div className="parameter-stat-header">
+              <span className="parameter-stat-name">pH</span>
 
-            <small>Recommended: 6.5 – 8.5</small>
+              <span className="parameter-stat-unit">pH</span>
+            </div>
+
+            <div className="parameter-stat-values">
+              <div>
+                <small>Minimum</small>
+                <strong>{phStats.minimum}</strong>
+              </div>
+
+              <div className="stat-average">
+                <small>Average</small>
+                <strong>{phStats.average}</strong>
+              </div>
+
+              <div>
+                <small>Maximum</small>
+                <strong>{phStats.maximum}</strong>
+              </div>
+            </div>
+
+            <span className="parameter-stat-limit">Safe range: 6.5 – 8.5</span>
           </div>
 
-          <div className="parameter-card">
-            <span>TDS</span>
+          {/* TDS */}
 
-            <strong>{avgTDS}</strong>
+          <div className="parameter-stat-card">
+            <div className="parameter-stat-header">
+              <span className="parameter-stat-name">TDS</span>
 
-            <small>Safe limit: ≤ 500 ppm</small>
+              <span className="parameter-stat-unit">ppm</span>
+            </div>
+
+            <div className="parameter-stat-values">
+              <div>
+                <small>Minimum</small>
+                <strong>{tdsStats.minimum}</strong>
+              </div>
+
+              <div className="stat-average">
+                <small>Average</small>
+                <strong>{tdsStats.average}</strong>
+              </div>
+
+              <div>
+                <small>Maximum</small>
+                <strong>{tdsStats.maximum}</strong>
+              </div>
+            </div>
+
+            <span className="parameter-stat-limit">Safe limit: ≤ 500 ppm</span>
           </div>
 
-          <div className="parameter-card">
-            <span>Turbidity</span>
+          {/* TURBIDITY */}
 
-            <strong>{avgTurbidity}</strong>
+          <div className="parameter-stat-card">
+            <div className="parameter-stat-header">
+              <span className="parameter-stat-name">Turbidity</span>
 
-            <small>Safe limit: ≤ 5 NTU</small>
+              <span className="parameter-stat-unit">NTU</span>
+            </div>
+
+            <div className="parameter-stat-values">
+              <div>
+                <small>Minimum</small>
+                <strong>{turbidityStats.minimum}</strong>
+              </div>
+
+              <div className="stat-average">
+                <small>Average</small>
+                <strong>{turbidityStats.average}</strong>
+              </div>
+
+              <div>
+                <small>Maximum</small>
+                <strong>{turbidityStats.maximum}</strong>
+              </div>
+            </div>
+
+            <span className="parameter-stat-limit">Safe limit: ≤ 5 NTU</span>
           </div>
 
-          <div className="parameter-card">
-            <span>Temperature</span>
+          {/* TEMPERATURE */}
 
-            <strong>{avgTemperature}°C</strong>
+          <div className="parameter-stat-card">
+            <div className="parameter-stat-header">
+              <span className="parameter-stat-name">Temperature</span>
 
-            <small>Safe limit: ≤ 30°C</small>
+              <span className="parameter-stat-unit">°C</span>
+            </div>
+
+            <div className="parameter-stat-values">
+              <div>
+                <small>Minimum</small>
+                <strong>{temperatureStats.minimum}°</strong>
+              </div>
+
+              <div className="stat-average">
+                <small>Average</small>
+                <strong>{temperatureStats.average}°</strong>
+              </div>
+
+              <div>
+                <small>Maximum</small>
+                <strong>{temperatureStats.maximum}°</strong>
+              </div>
+            </div>
+
+            <span className="parameter-stat-limit">Safe limit: ≤ 30°C</span>
           </div>
         </div>
       </div>

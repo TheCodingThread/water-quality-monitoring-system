@@ -1803,3 +1803,196 @@ body.dark .analytics-filter select option {
   background: #111827;
   color: #f8fafc;
 }
+
+/* =========================================
+   CUSTOM DATE RANGE
+========================================= */
+
+.custom-date-filter {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.date-field label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.date-field input {
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.date-field input:focus {
+  border-color: #2563eb;
+}
+
+.date-arrow {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.apply-date-button {
+  height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 9px;
+  background: #2563eb;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.apply-date-button:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.apply-date-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Dark mode */
+
+body.dark .date-field input {
+  color-scheme: dark;
+  background: #111827;
+  color: #f8fafc;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+
+  .analytics-header {
+    align-items: stretch;
+  }
+
+  .custom-date-filter {
+    flex-wrap: wrap;
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .custom-date-filter {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .date-arrow {
+    display: none;
+  }
+
+  .apply-date-button {
+    grid-column: 1 / -1;
+  }
+
+}
+
+/* =========================================
+   PARAMETER STATISTICS
+========================================= */
+
+.parameter-statistics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.parameter-stat-card {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-hover);
+}
+
+.parameter-stat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.parameter-stat-name {
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.parameter-stat-unit {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.parameter-stat-values {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.parameter-stat-values div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.parameter-stat-values small {
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+.parameter-stat-values strong {
+  color: var(--text-primary);
+  font-size: 17px;
+}
+
+.parameter-stat-values .stat-average {
+  padding-left: 10px;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  padding-right: 10px;
+}
+
+.parameter-stat-limit {
+  display: block;
+  margin-top: 18px;
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+@media (max-width: 1200px) {
+  .parameter-statistics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .parameter-statistics {
+    grid-template-columns: 1fr;
+  }
+}
